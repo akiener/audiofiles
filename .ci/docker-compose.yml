@@ -1,0 +1,49 @@
+version: '3'
+services:
+  db:
+    restart: always
+    image: postgres:13.2-alpine
+    ports:
+      - "5432:5432"
+    volumes:
+      - pgdata:/var/lib/postgresql/data
+    environment:
+      - POSTGRES_DB=audiofiles
+      - POSTGRES_USER=audiofiles
+      - POSTGRES_PASSWORD=${AUDIOFILES_DB_PASSWORD}
+
+  #  db-backup:
+  #    restart: always
+  #    image: prodrigestivill/postgres-backup-local
+  #    volumes:
+  #      - ./backup:/backups
+  #    links:
+  #      - db
+  #    depends_on:
+  #      - db
+  #    environment:
+  #      - POSTGRES_HOST=db
+  #      - POSTGRES_DB=audiofiles
+  #      - POSTGRES_USER=audiofiles
+  #      - POSTGRES_PASSWORD=${AUDIOFILES_DB_PASSWORD}
+  #      - POSTGRES_EXTRA_OPTS=-Z9 --schema=public --blobs
+  #      - SCHEDULE=@every 1h00m00s
+  #      - BACKUP_KEEP_DAYS=7
+  #      - BACKUP_KEEP_WEEKS=4
+  #      - BACKUP_KEEP_MONTHS=1
+  #      - HEALTHCHECK_PORT=81
+
+  bot:
+    restart: always
+    build:
+      context: ..
+      dockerfile: .ci/audiofiles.Dockerfile
+    environment:
+      - AUDIOFILES_DB_HOST=db
+    links:
+      - db
+    depends_on:
+      - db
+
+volumes:
+  pgdata:
