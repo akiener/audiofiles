@@ -1,14 +1,16 @@
 package main
 
 import (
+	"context"
 	"fmt"
 	"os"
 	"os/signal"
 	"syscall"
 
 	"github.com/bwmarrin/discordgo"
-
 	log "github.com/sirupsen/logrus"
+	"github.com/zmb3/spotify"
+	"golang.org/x/oauth2/clientcredentials"
 
 	"muse/database"
 )
@@ -25,6 +27,23 @@ func main() {
 		log.WithError(err).Fatal("failed to test database connection")
 	}
 	log.Infof("found %d songs in the database!", len(*songs))
+
+	config := &clientcredentials.Config{
+		ClientID:     os.Getenv("AUDIOFILES_SPOTIFY_CLIENT_ID"),
+		ClientSecret: os.Getenv("AUDIOFILES_SPOTIFY_CLIENT_SECRET"),
+		TokenURL:     spotify.TokenURL,
+	}
+	token, err := config.Token(context.Background())
+	if err != nil {
+		log.Fatalf("couldn't get token: %v", err)
+	}
+
+	client := spotify.Authenticator{}.NewClient(token)
+	search, err := client.Search("aLIEz", spotify.SearchTypeTrack)
+	if err != nil {
+		log.Fatalf("couldn't get features playlists: %v", err)
+	}
+	println(search)
 
 	discord, err := discordgo.New("Bot " + os.Getenv("AUDIOFILES_BOT_TOKEN"))
 	if err != nil {

@@ -15,7 +15,7 @@ type Database struct {
 }
 
 type Song struct {
-	Id          int    `db:"id"`
+	ID          int    `db:"id"`
 	Name        string `db:"name"`
 	Artist      string `db:"artist_name"`
 	Album       string `db:"album_name"`
